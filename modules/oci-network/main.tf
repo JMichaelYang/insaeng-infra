@@ -25,8 +25,6 @@ resource "oci_core_default_route_table" "this" {
   }
 }
 
-# Egress only. There are deliberately no ingress_security_rules: OCI's default
-# security list allows SSH from anywhere, and Tailscale is the only way in.
 resource "oci_core_default_security_list" "this" {
   manage_default_resource_id = oci_core_vcn.this.default_security_list_id
   display_name               = "${var.name}-default"
@@ -40,8 +38,6 @@ resource "oci_core_default_security_list" "this" {
   }
 }
 
-# Regional (no availability_domain) and public, so the node gets an ephemeral
-# public IP for outbound traffic.
 resource "oci_core_subnet" "this" {
   compartment_id             = var.compartment_id
   vcn_id                     = oci_core_vcn.this.id
