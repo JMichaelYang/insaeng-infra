@@ -1,0 +1,6 @@
+framework:
+  - terraform
+  - github_actions
+compact: true
+quiet: true
+skip-check: []
