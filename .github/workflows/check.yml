@@ -1,11 +1,4 @@
-# Fast, credential-free checks for every PR and every push to main.
-#
-# Fork safety: this runs on `pull_request` (never `pull_request_target`), uses
-# no secrets, and the token is read-only, so fork PRs run the same checks
-# safely. Keep it that way: jobs that need cloud access belong elsewhere.
-#
-# The job names are required checks in the main ruleset, so renaming one means
-# updating the ruleset too. To add a check, add another job below.
+# Read-only Terraform checks.
 name: check
 
 on:
@@ -96,6 +89,5 @@ jobs:
           tflint_version: v0.66.0
       - run: tflint --init
         env:
-          # The read-only workflow token, only to avoid GitHub API rate limits.
           GITHUB_TOKEN: ${{ github.token }}
       - run: tflint --recursive --format compact
