@@ -20,7 +20,7 @@ variable "ts_auth_key" {
 }
 
 variable "data_device" {
-  description = "Block device path of the data disk, e.g. /dev/oracleoci/oraclevdb on OCI."
+  description = "Block device path of the data disk."
   type        = string
 
   validation {

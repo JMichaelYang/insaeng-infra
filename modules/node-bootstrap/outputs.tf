@@ -5,7 +5,7 @@ output "user_data" {
 }
 
 output "user_data_base64" {
-  description = "user_data, base64-encoded for OCI metadata.user_data."
+  description = "user_data, base64-encoded."
   value       = base64encode(local.user_data)
   sensitive   = true
 }
