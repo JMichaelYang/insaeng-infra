@@ -1,18 +1,8 @@
 #cloud-config
-# Bootstrap for ${name}: install Tailscale and join the tailnet, then prepare
-# and mount the data disk at /data.
-#
-# Services that need /data must declare RequiresMountsFor=/data in their
-# [Unit] section. /data is mounted with nofail, so a missing disk never holds
-# up boot; such services just don't start until the disk is mounted.
-
 apt:
   sources:
     tailscale.list:
       source: "deb [signed-by=$KEY_FILE] https://pkgs.tailscale.com/stable/ubuntu noble main"
-      # Tailscale package repository signing key, from
-      # https://pkgs.tailscale.com/stable/ubuntu/noble.gpg
-      # fingerprint 2596 A99E AAB3 3821 893C  0A79 458C A832 957F 5868
       key: |
         -----BEGIN PGP PUBLIC KEY BLOCK-----
 
@@ -72,8 +62,6 @@ packages:
   - tailscale
 
 write_files:
-  # Waits for the data disk and gives it an ext4 filesystem labelled "data"
-  # only if blkid finds nothing on it, so an existing volume is never wiped.
   - path: /usr/local/sbin/prepare-data-disk
     owner: root:root
     permissions: "0755"
@@ -81,7 +69,6 @@ write_files:
       #!/bin/bash
       set -u
       device='${data_device}'
-      # Just under data.mount's 5min device timeout, which runs alongside.
       timeout=270
       waited=0
       while [ ! -b "$device" ]; do
@@ -133,8 +120,6 @@ write_files:
       [Install]
       WantedBy=data.mount
 
-  # One-time auth key, readable only by root and deleted after a successful
-  # join. It is passed to tailscale as file: so it never shows up in argv.
   - path: /etc/tailscale/authkey
     owner: root:root
     permissions: "0600"
@@ -168,7 +153,6 @@ write_files:
       Requires=tailscaled.service
       Wants=network-online.target
       After=tailscaled.service network-online.target
-      # Skipped once a join has succeeded and removed the key.
       ConditionPathExists=/etc/tailscale/authkey
 
       [Service]
@@ -179,13 +163,9 @@ write_files:
       [Install]
       WantedBy=multi-user.target
 
-# The data disk attaches after boot, hence nofail and a device timeout.
-# cloud-init appends comment=cloudconfig to the options.
 mounts:
   - [LABEL=data, /data, ext4, "defaults,nofail,x-systemd.device-timeout=5min", "0", "2"]
 
-# Runs after packages are installed. Both jobs start without blocking so
-# cloud-init finishes even while the disk or the tailnet isn't ready yet.
 runcmd:
   - [systemctl, daemon-reload]
   - [systemctl, enable, data-disk.service, tailscale-join.service]
