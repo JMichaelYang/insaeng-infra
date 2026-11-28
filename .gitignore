@@ -1,0 +1,6 @@
+*.tfstate*
+.terraform/
+*.tfplan
+*.tfvars
+backend_override.tf
+crash.log
